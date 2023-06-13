@@ -83,3 +83,78 @@ The dataset contains various tables with information about high schools, municip
 By utilizing these major features/feature families, we can explore the relationships and dependencies between social, financial, and educational elements and their impact on the entitlement for 5 points Bagrut in mathematics.
 All data collected is published in the Ministry of Education website: https://infocenter.education.gov.il/all/extensions/Shkifut_Reports/Shkifut_Reports.html
 
+
+```{r}
+# Load the required package
+library(readxl)
+library(dplyr)
+library(stats)
+
+# Read the Excel file
+data <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-bagrut.xlsx")
+
+# Select the relevant features and target
+features <- c('exam_purity', 'pentile', 'is_youth_at_risk', 'sector', 'type',
+              'number_of_students_yodbet', 'bagrut', 'bagrut_reg_ed', 'bagrut_excell',
+              'bagrut_reg_ed_excell')
+target <- 'math_5_reg_ed'
+
+# Filter the data and handle missing values if needed
+filtered_data <- na.omit(data[, c(features, target)])
+
+# Split the dataset into features and target variables
+X <- filtered_data[, features]
+y <- filtered_data[, target]
+
+# Fit the linear regression model
+regression_model <- lm("math_5_reg_ed ~ .", data = filtered_data)
+
+# Print the coefficients (weights) and intercept
+print("Intercept:")
+print(regression_model$coefficients[1])
+print("Coefficients:")
+print(regression_model$coefficients[-1])
+```
+
+```{r}
+# Load the required packages
+library(readxl)
+library(dplyr)
+library(stats)
+
+# Read the Excel file
+data <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-bagrut.xlsx")
+
+# Select the relevant features and target
+features <- c('exam_purity', 'pentile', 'is_youth_at_risk', 'sector', 'type',
+              'number_of_students_yodbet', 'bagrut', 'bagrut_reg_ed', 'bagrut_excell',
+              'bagrut_reg_ed_excell')
+target <- 'math_5_reg_ed'
+
+# Filter the data and handle missing values if needed
+filtered_data <- na.omit(data[, c(features, target)])
+
+# Convert categorical variables to factors
+filtered_data$exam_purity <- as.factor(filtered_data$exam_purity)
+filtered_data$sector <- as.factor(filtered_data$sector)
+filtered_data$type <- as.factor(filtered_data$type)
+
+# Create dummy variables for the categorical features
+dummy_vars <- model.matrix(~ exam_purity + sector + type - 1, data = filtered_data)
+
+# Combine the dummy variables with the numerical features
+X <- cbind(filtered_data[, setdiff(features, c('exam_purity', 'sector', 'type'))], dummy_vars)
+
+# Split the dataset into features and target variables
+y <- filtered_data[, target]
+
+# Fit the linear regression model
+regression_model <- lm(y ~ ., data = X)
+
+# Print the coefficients (weights) and intercept
+print("Intercept:")
+print(regression_model$coefficients[1])
+print("Coefficients:")
+print(regression_model$coefficients[-1])
+```
+
