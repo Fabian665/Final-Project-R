@@ -149,3 +149,52 @@ schools_edu_image <- read_excel(file_list[7])
 
 ```
 
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+## 1. Introduction
+
+### How do different social, financial and educational elements affect the entitlement for 5 points Bagrut in mathematics in Israel?
+
+This is an important question because it can help us to understand the factors that contribute to students' success in mathematics. This information can then be used to develop interventions that can help to improve students' mathematical achievement.
+
+The general problem area that this analysis contributes to is the field of educational research. Educational research is the study of how students learn and how to improve educational outcomes. This research can be used to ensure that all students have the opportunity to succeed.
+
+Although prior work on this specific research question is limited, we have found several additional research studies that provide relevant information. Firstly, we have found a report by the state comptroller from 2016 that highlights a decline in the percentage of students achieving 5 points in math Bagrut in recent years. This report also includes graphs illustrating the influence of sector and socioeconomic status on the rate of change in the entitlement for 5 points Bagrut. Moreover, The Information and Research Center of the Knesset has conducted a few researches on the subject. One of the studies, for example, examines the entitlement for 5 points Bagrut in mathematics from various perspectives. It analyzes the entitlement by socioeconomic status, nurturing index of the Ministry of Education, and geographical district. The other report focuses on the changes in the budget per student in the education system in recent years. Additionally, we have come across news articles published annually that provide information on the percentage of students achieving the 5 points math Bagrut per school in Israel.
+
+Despite these existing sources, our research takes a unique approach by combining several sources of data on schools. This comprehensive approach allows us to use statistical methods to identify the most significant predictors that impact students' entitlement for 5 points Bagrut in mathematics. By extending the current body of theory and prior work, we aim to provide a deeper understanding of the factors that contribute to students' success in mathematics and inform evidence-based interventions in the Israeli education system.
+
