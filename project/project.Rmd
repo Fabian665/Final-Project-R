@@ -1,0 +1,21 @@
+---
+title: "Project proposal"
+author: "Team number 5"
+mainfont: Roboto
+output:
+  pdf_document:
+    latex_engine: xelatex
+fig_caption: true
+---
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(broom)
+library(htmltools)
+library(readxl)
+library(skimr)
+```
+
+```{r}
+
+```
