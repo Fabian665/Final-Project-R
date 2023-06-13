@@ -157,4 +157,20 @@ print(regression_model$coefficients[1])
 print("Coefficients:")
 print(regression_model$coefficients[-1])
 ```
+```{r}
+# Load the required packages
+library(readxl)
+library(dplyr)
+library(stats)
+
+# Read the Excel files
+dataset1 <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-bagrut.xlsx")
+dataset2 <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-edu-image.xlsx")
+
+# Perform the join operation
+merged_data <- inner_join(dataset1, dataset2, by = c("school_id" = "sid", "year"))
+
+# Print the merged dataset
+print(merged_data)
+```
 
