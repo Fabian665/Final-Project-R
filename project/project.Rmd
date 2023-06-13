@@ -17,7 +17,132 @@ library(skimr)
 ```
 
 ```{r clean_data}
+folder_path <- "../data"
 
+# Get the list of files in the folder
+file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
+
+high_schools_budget <- read_excel(file_list[1])
+
+names(high_schools_budget) <- c(
+    "hebrew_year",
+    "del1",
+    "muni_name",
+    "sid",
+    "school_name",
+    "edu_type",
+    "sector",
+    "pentile",
+    "pentile_type",
+    "del2",
+    "is_new_horizon",
+    "teaching_hours",
+    "teaching_cost",
+    "tutor_hours",
+    "del3",
+    "del4",
+    "del5",
+    "del6",
+    "tuition",
+    "del7",
+    "del8",
+    "del9",
+    "del10",
+    "students_regular",
+    "students_special",
+    "number_of_classes",
+    "number_of_special_classes",
+    "del11",
+    "del12",
+    "total_budget"
+)
+high_schools_budget <- high_schools_budget[, -grep("^del[0-9]+$", names(high_schools_budget))]
+
+
+lamas_budget <- read_excel(file_list[2])
+names(lamas_budget) <- c(
+  "hebrew_year",
+  "socio_economic_status",
+  "del1",
+  "del2",
+  "del3",
+  "teaching_hours",
+  "teaching_cost",
+  "tutor_hours",
+  "staying_hours",
+  "guidance_hours",
+  "guidance_cost",
+  "del4",
+  "del5",
+  "del6",
+  "del7",
+  "tuition",
+  "del8",
+  "perimeter_services_cost",
+  "transportation_cost",
+  "projects_cost",
+  "purchases_cost",
+  "del9",
+  "maayan_hinuh_cost",
+  "del10",
+  "ptor_cost",
+  "extras_ptor_cost",
+  "number_of_students",
+  "number_of_classes",
+  "del11",
+  "del12",
+  "total_budget"
+)
+lamas_budget <- lamas_budget[, -grep("^del[0-9]+$", names(lamas_budget))]
+
+
+municipal_aklim <- read_excel(file_list[3])
+names(municipal_aklim) <- c(
+  "cid",  # TODO: change to muni
+  "city",
+  "del_edu_level",
+  "hebrew_year",
+  "respondents_teacher",
+  "respondents_students",
+  "respondents_teacher_percentage",
+  "respondents_students_percentage",
+  "del1",
+  "del2",
+  "del3",
+  "del4",
+  "teacher_student_relations",
+  "del5",
+  "teacher_satisfaction",
+  "del6",
+  "del7",
+  "del8",
+  "reception_and_accompaniment",
+  "del9",
+  "violence",
+  "del10",
+  "interest",
+  "del11",
+  "teacher_development",
+  "del12",
+  "teaching_methods",
+  "del13",
+  "self_teach_strategies",
+  "del14",
+  "del15",
+  "del16",
+  "positive_feeling",
+  "del17",
+  "parents_involvement",
+  "del18"
+)
+municipal_aklim <- municipal_aklim[, -grep("^del[0-9\\w]+$", names(municipal_aklim))]
+
+
+
+municipal_edu_image <- read_excel(file_list[4])
+schools_aklim <- read_excel(file_list[5])
+schools_bagrut <- read_excel(file_list[6])
+schools_edu_image <- read_excel(file_list[7])
 ```
 
 ```{r}
