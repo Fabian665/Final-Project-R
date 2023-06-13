@@ -21,10 +21,6 @@ folder_path <- "../data"
 
 # Get the list of files in the folder
 file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
-
-
-
-
 ```
 
 ```{r make_high_schools_budget}
@@ -148,18 +144,217 @@ municipal_aklim <- municipal_aklim[, -grep("^del[0-9\\w]+$", names(municipal_akl
 
 ```{r make_municipal_edu_image}
 municipal_edu_image <- read_excel(file_list[4])
+names(municipal_edu_image) <- c(
+  "hebrew_year",
+  "city",  # TODO: change to muni
+  "cid",
+  "socio_economic_status",
+  "district",
+  "del1",
+  "del2",
+  "del3",
+  "del4",
+  "del5",
+  "del6",
+  "high_schools_students",
+  "del7",
+  "del8",
+  "del9",
+  "del10",
+  "masters_or_higher_in_high_school",
+  "hatamot_ivchun",
+  "hatamot_no_ivchun",
+  "olim",
+  "spcecial_ed_in_reg",
+  "del11",
+  "del12",
+  "number_of_classes",
+  "del13",
+  "del14",
+  "del15",
+  "total_teachers",
+  "del16",
+  "dropouts",
+  "del17",
+  "del18",
+  "del19",
+  "del20",
+  "bagrut_entitlement",
+  "bagrut_reg_ed",
+  "bagrut_excel",
+  "bagrut_reg_ed_excel",
+  "english_4",
+  "english_4_reg_ed",
+  "english_5",
+  "english_5_reg_ed",
+  "math_4",
+  "math_4_reg_ed",
+  "math_5",
+  "math_5_reg_ed",
+  "del21",
+  "del22",
+  "del23",
+  "del24",
+  "del25",
+  "del26",
+  "del27",
+  "class_size"
+)
+municipal_edu_image <- municipal_edu_image[, -grep("^del[0-9\\w]+$", names(municipal_edu_image))]
 ```
 
 ```{r make_schools_aklim}
 schools_aklim <- read_excel(file_list[5])
+names(schools_aklim) <- c(
+  "hebrew_year",
+  "district",
+  "school_id",
+  "school_name",
+  "del1",
+  "del_edu_level",
+  "muni_name",
+  "sector",
+  "type",
+  "respondents_teacher",
+  "respondents_students",
+  "respondents_teacher_percentage",
+  "respondents_students_percentage",
+  "del2",
+  "del3",
+  "del4",
+  "del5",
+  "teacher_student_relations",
+  "del6",
+  "teacher_satisfaction",
+  "del7",
+  "del8",
+  "del9",
+  "reception_and_accompaniment",
+  "violence",
+  "del10",
+  "interest",
+  "del11",
+  "teacher_development",
+  "del12",
+  "teaching_methods",
+  "del13",
+  "self_teach_strategies",
+  "del14",
+  "del15",
+  "del16",
+  "positive_feeling",
+  "del17",
+  "parents_involvement",
+  "del18",
+  "del19",
+  "del20"
+)
+schools_aklim <- schools_aklim[, -grep("^del[0-9\\w]+$", names(schools_aklim))]
 ```
 
 ```{r make_schools_bagrut}
+#add is youthat risk
 schools_bagrut <- read_excel(file_list[6])
+names(schools_bagrut) <- c(
+  "hebrew_year",
+  "district",
+  "muni_id",
+  "muni_name",
+  "school_id",
+  "school_name",
+  "exam_putiry",
+  "pentile",
+  "sector",
+  "type",
+  "del1",
+  "del2",
+  "del3",
+  "del4",
+  "number_of_students_yodbet",
+  "bagrut",
+  "del5",
+  "bagrut_reg_ed",
+  "del6",
+  "bagrut_excell",
+  "del7",
+  "bagrut_reg_ed_excell",
+  "del8",
+  "english_4",
+  "del9",
+  "english_4_reg_ed",
+  "del10",
+  "english_5",
+  "del11",
+  "english_5_reg_ed",
+  "del12",
+  "math_4",
+  "del13",
+  "math_4_reg_ed",
+  "del14",
+  "math_5",
+  "del15",
+  "math_5_reg_ed",
+  "del16"
+)
+schools_bagrut <- schools_bagrut[, -grep("^del[0-9\\w]+$", names(schools_bagrut))]
 ```
 
 ```{r make_schools_edu_image}
 schools_edu_image <- read_excel(file_list[7])
+names(schools_bagrut) <- c(
+  "hebrew_year",
+  "educational_district",
+  "sid",
+  "cid",
+  "muni_name",
+  "school_name",
+  "exam_putiry",
+  "del1",
+  "del2",
+  "pentile_middle",
+  "pentile_high",
+  "del3",
+  "decile_middle",
+  "decile_high",
+  "sector",
+  "type",
+  "from_grade",
+  "to_grade",
+  "school_plan",
+  "tech",
+  "del4",
+  "olim",
+  "is_special_ed",
+  "schooly_type",
+  "number_of_classes",
+  "number_of_classes_yod_yodbet",
+  "del5",
+  "del6",
+  "del7",
+  "number_of_students",
+  "number_of_students_yod_yodbet",
+  "number_of_students_yodbet",
+  "median_seniority",
+  "total_teachers",
+  "masters_or_higher_in_high_school",
+  "hatamot_no_ivhun",
+  "del8",
+  "hatamot_ivchun",
+  "del9",
+  "special_ed",
+  "del10",
+  "del11",
+  "dropouts",
+  "del12",
+  "del13",
+  "del14",
+  "dropouts_high_school",
+  "youth_at_risk",
+  "bagrut_school",
+  "del15",
+  "hila_students"
+)
+schools_bagrut <- schools_bagrut[, -grep("^del[0-9\\w]+$", names(schools_bagrut))]
 ```
 
 ```{r}
