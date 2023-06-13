@@ -16,11 +16,251 @@ library(readxl)
 library(skimr)
 ```
 
-```{r clean_data}
+```{r get_file_names}
+folder_path <- "../data"
 
+# Get the list of files in the folder
+file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
 ```
 
-```{r}
+```{r make_high_schools_budget, warning=FALSE}
+high_schools_budget <- read_excel(file_list[1])
+
+names(high_schools_budget) <- c(
+    "hebrew_year", "del1", "muni_name", "sid", "school_name", "del13",
+    "sector", "pentile", "pentile_type", "del2", "is_new_horizon",
+    "teaching_hours", "teaching_cost", "tutor_hours", "del3", "del4", "del5",
+    "del6", "tuition", "del7", "del8", "del9", "del10", "students_regular",
+    "students_special", "number_of_classes", "number_of_special_classes",
+    "del11", "del12", "total_budget"
+)
+
+high_schools_budget <- high_schools_budget[, -grep("^del[0-9]+$", names(high_schools_budget))]
+
+high_schools_budget <- high_schools_budget %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      ),
+    pentile = as.integer(as.character(pentile)),
+    pentile_type = case_when(
+      pentile_type == "לא מחושב" ~ NA_character_,
+      TRUE ~ pentile_type
+    ),
+    is_new_horizon = case_when(
+      is_new_horizon == 1 ~ TRUE,
+      TRUE ~ FALSE
+    )
+  )
+```
+
+```{r make_lamas_budget, warning=FALSE}
+lamas_budget <- read_excel(file_list[2])
+
+names(lamas_budget) <- c(
+  "hebrew_year", "socio_economic_status", "del1", "del2", "del3",
+  "teaching_hours", "teaching_cost", "tutor_hours", "staying_hours",
+  "guidance_hours", "guidance_cost", "del4", "del5", "del6", "del7", "tuition",
+  "del8", "perimeter_services_cost", "transportation_cost", "projects_cost",
+  "purchases_cost", "del9", "maayan_hinuh_cost", "del10", "ptor_cost",
+  "extras_ptor_cost", "number_of_students", "number_of_classes", "del11",
+  "del12", "total_budget"
+)
+
+lamas_budget <- lamas_budget[, -grep("^del[0-9]+$", names(lamas_budget))]
+
+lamas_budget <- lamas_budget %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      ),
+    socio_economic_status = as.integer(as.character(socio_economic_status))
+    )
+```
+
+```{r make_municipal_aklim, warning=FALSE}
+municipal_aklim <- read_excel(file_list[3])
+
+  # TODO: change to muni
+names(municipal_aklim) <- c(
+  "cid", "city", "del_edu_level", "hebrew_year", "respondents_teacher",
+  "respondents_students", "respondents_teacher_percentage",
+  "respondents_students_percentage", "del1", "del2", "del3", "del4", 
+  "teacher_student_relations", "del5", "teacher_satisfaction", "del6", "del7",
+  "del8", "reception_and_accompaniment", "del9", "violence", "del10",
+  "interest", "del11", "teacher_development", "del12", "teaching_methods",
+  "del13", "self_teach_strategies", "del14", "del15", "del16",
+  "positive_feeling", "del17", "parents_involvement", "del18"
+)
+
+municipal_aklim <- municipal_aklim[, -grep("^del[0-9]+$", names(municipal_aklim))]
+
+municipal_aklim <- municipal_aklim %>%
+  filter(del_edu_level == 'חט"ע') %>%
+  select(-del_edu_level) %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      )
+  ) %>%
+  mutate_all(~ ifelse(. == "-", NA, .))
+```
+
+```{r make_municipal_edu_image, warning=FALSE}
+municipal_edu_image <- read_excel(file_list[4])
+
+  # TODO: change to muni
+names(municipal_edu_image) <- c(
+  "hebrew_year", "city", "cid", "socio_economic_status", "district", "del1", 
+  "del2", "del3", "del4", "del5", "del6", "high_schools_students", "del7",
+  "del8", "del9", "del10", "masters_or_higher_in_high_school", "hatamot_ivchun",
+  "hatamot_no_ivchun", "olim", "spcecial_ed_in_reg", "del11", "del12",
+  "number_of_classes", "del13", "del14", "del15", "total_teachers", "del16",
+  "dropouts", "del17", "del18", "del19", "del20", "bagrut_entitlement",
+  "bagrut_reg_ed", "bagrut_excel", "bagrut_reg_ed_excel", "english_4", 
+  "english_4_reg_ed", "english_5", "english_5_reg_ed", "math_4", 
+  "math_4_reg_ed", "math_5", "math_5_reg_ed", "del21", "del22", "del23",
+  "del24", "del25", "del26", "del27", "class_size"
+  )
+
+municipal_edu_image <- municipal_edu_image[, -grep("^del[0-9]+$", names(municipal_edu_image))]
+
+municipal_edu_image <- municipal_edu_image %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      ),
+    socio_economic_status = as.integer(as.character(socio_economic_status))
+  ) %>%
+  mutate_all(~ ifelse(. == "לא רלוונטי", NA, .)) %>%
+  mutate_all(~ ifelse(. == "לא מחושב", NA, .))
+```
+
+```{r make_schools_aklim, warning=FALSE}
+schools_aklim <- read_excel(file_list[5])
+
+names(schools_aklim) <- c(
+  "questionaire_year", "district", "school_id", "school_name", "del1",
+  "del_edu_level", "muni_name", "sector", "type", "respondents_teacher",
+  "respondents_students", "respondents_teacher_percentage", 
+  "respondents_students_percentage", "del2", "del3", "del4", "del5",
+  "teacher_student_relations", "del6", "teacher_satisfaction", "del7", "del8",
+  "del9", "reception_and_accompaniment", "del10", "violence", "del11",
+  "interest", "del12", "teacher_development", "del13", "teaching_methods",
+  "del14", "self_teach_strategies", "del15", "del16", "del17",
+  "positive_feeling", "del18", "parents_involvement", "del19", "del20", "del21"
+  )
+
+schools_aklim <- schools_aklim[, -grep("^del[0-9]+$", names(schools_aklim))]
+
+schools_aklim <- schools_aklim %>%
+  select(-del_edu_level) %>%
+  mutate_all(~ ifelse(. == "-", NA, .))
+```
+
+```{r make_schools_edu_image, warning=FALSE}
+schools_edu_image <- read_excel(file_list[7])
+names(schools_edu_image) <- c(
+  "hebrew_year", "educational_district", "sid", "cid", "muni_name", 
+  "school_name", "exam_putiry", "del1", "del2", "pentile_middle",
+  "pentile_high", "del3", "decile_middle", "decile_high", "sector", "type",
+  "from_grade", "to_grade", "school_plan", "tech", "del4", "olim",
+  "is_special_ed", "schooly_type", "number_of_classes",
+  "number_of_classes_yod_yodbet", "del5", "del6", "del7", "number_of_students",
+  "number_of_students_yod_yodbet", "number_of_students_yodbet",
+  "median_seniority", "total_teachers", "masters_or_higher_in_high_school",
+  "hatamot_no_ivhun", "del8", "hatamot_ivchun", "del9", "special_ed", "del10",
+  "del11", "dropouts", "del12", "del13", "del14", "dropouts_high_school",
+  "youth_at_risk", "bagrut_school", "del15", "hila_students"
+  )
+schools_edu_image <- schools_edu_image[, -grep("^del[0-9\\w]+$", names(schools_edu_image))]
+schools_edu_image <- schools_edu_image %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      )
+  ) %>%
+  mutate_all(~ ifelse(. == "לא רלוונטי", NA, .)) %>%
+  mutate_all(~ ifelse(. == "לא מחושב", NA, .))
+```
+
+```{r make_schools_bagrut, warning=FALSE}
+#add is youthat risk
+schools_bagrut <- read_excel(file_list[6])
+
+names(schools_bagrut) <- c(
+  "hebrew_year", "district", "muni_id", "muni_name", "sid", "school_name",
+  "exam_putiry", "pentile_youth", "sector", "type", "del1", "del2", "del3", "del4",
+  "number_of_students_yodbet", "bagrut", "del5", "bagrut_reg_ed", "del6",
+  "bagrut_excell", "del7", "bagrut_reg_ed_excell", "del8", "english_4", "del9",
+  "english_4_reg_ed", "del10", "english_5", "del11", "english_5_reg_ed",
+  "del12", "math_4", "del13", "math_4_reg_ed", "del14", "math_5", "del15",
+  "math_5_reg_ed", "del16"
+  )
+
+schools_bagrut <- schools_bagrut[, -grep("^del[0-9]+$", names(schools_bagrut))]
+
+schools_bagrut <- schools_bagrut %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      ),
+    youth_at_risk = case_when(
+      pentile_youth == "נוער בסיכון" ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) %>%
+  left_join(schools_edu_image[, c("year", "sid", "pentile_high")], by = c("year", "sid")) %>%
+  mutate(pentile = pentile_high) %>%
+  select(-pentile_youth, -pentile_high)
 
 ```
 
