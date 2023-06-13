@@ -224,7 +224,7 @@ schools_edu_image <- schools_edu_image %>%
   mutate_all(~ ifelse(. == "לא מחושב", NA, .))
 ```
 
-```{r make_schools_bagrut}
+```{r make_schools_bagrut, warning=FALSE}
 #add is youthat risk
 schools_bagrut <- read_excel(file_list[6])
 
