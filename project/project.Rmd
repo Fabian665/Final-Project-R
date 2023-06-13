@@ -16,12 +16,18 @@ library(readxl)
 library(skimr)
 ```
 
-```{r clean_data}
+```{r get_file_names}
 folder_path <- "../data"
 
 # Get the list of files in the folder
 file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
 
+
+
+
+```
+
+```{r make_high_schools_budget}
 high_schools_budget <- read_excel(file_list[1])
 
 names(high_schools_budget) <- c(
@@ -57,8 +63,9 @@ names(high_schools_budget) <- c(
     "total_budget"
 )
 high_schools_budget <- high_schools_budget[, -grep("^del[0-9]+$", names(high_schools_budget))]
+```
 
-
+```{r make_lamas_budget}
 lamas_budget <- read_excel(file_list[2])
 names(lamas_budget) <- c(
   "hebrew_year",
@@ -94,8 +101,9 @@ names(lamas_budget) <- c(
   "total_budget"
 )
 lamas_budget <- lamas_budget[, -grep("^del[0-9]+$", names(lamas_budget))]
+```
 
-
+```{r make_municipal_aklim}
 municipal_aklim <- read_excel(file_list[3])
 names(municipal_aklim) <- c(
   "cid",  # TODO: change to muni
@@ -136,12 +144,21 @@ names(municipal_aklim) <- c(
   "del18"
 )
 municipal_aklim <- municipal_aklim[, -grep("^del[0-9\\w]+$", names(municipal_aklim))]
+```
 
-
-
+```{r make_municipal_edu_image}
 municipal_edu_image <- read_excel(file_list[4])
+```
+
+```{r make_schools_aklim}
 schools_aklim <- read_excel(file_list[5])
+```
+
+```{r make_schools_bagrut}
 schools_bagrut <- read_excel(file_list[6])
+```
+
+```{r make_schools_edu_image}
 schools_edu_image <- read_excel(file_list[7])
 ```
 
