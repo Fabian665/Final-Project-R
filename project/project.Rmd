@@ -215,3 +215,13 @@ Although prior work on this specific research question is limited, we have found
 
 Despite these existing sources, our research takes a unique approach by combining several sources of data on schools. This comprehensive approach allows us to use statistical methods to identify the most significant predictors that impact students' entitlement for 5 points Bagrut in mathematics. By extending the current body of theory and prior work, we aim to provide a deeper understanding of the factors that contribute to students' success in mathematics and inform evidence-based interventions in the Israeli education system.
 
+## 2. Data Overview
+
+The dataset contains various tables with information about high schools, municipalities, socio-economic factors, and educational measures in Israel. It includes data on school budgets, socio-economic status, teacher-student relations, bagrut results, and more. There are three entities in our dataset: Schools, Municipalities, Socio-economic group. Provided below are a list of family features appropriate for tackling the research question:
+- Financial Features: These include variables related to high school budgets, such as teaching hours, teaching costs, tutor hours, tuition fees, and total budget allocations. 
+- Socio-Economic Features: These encompass variables related to the socio-economic status of municipalities and districts, including socio-economic status and nurturing index (pentile). 
+- Educational Features: These features capture various aspects of the educational environment. They include variables related to teacher-student relations, teacher satisfaction, violence, interest, teacher development, teaching methods.
+- School-Specific Features: These include variables related to individual schools, such as school type, sector, and specific school-level characteristics. They capture the unique attributes of each school. 
+By utilizing these major features/feature families, we can explore the relationships and dependencies between social, financial, and educational elements and their impact on the entitlement for 5 points Bagrut in mathematics.
+All data collected is published in the Ministry of Education website: https://infocenter.education.gov.il/all/extensions/Shkifut_Reports/Shkifut_Reports.html
+
