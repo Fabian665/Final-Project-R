@@ -14,6 +14,7 @@ library(broom)
 library(htmltools)
 library(readxl)
 library(skimr)
+library(stats)
 ```
 
 ```{r get_file_names}
@@ -99,7 +100,7 @@ municipal_aklim <- read_excel(file_list[3])
 
   # TODO: change to muni
 names(municipal_aklim) <- c(
-  "cid", "city", "del_edu_level", "hebrew_year", "respondents_teacher",
+  "mid", "muni_name", "del_edu_level", "hebrew_year", "respondents_teacher",
   "respondents_students", "respondents_teacher_percentage",
   "respondents_students_percentage", "del1", "del2", "del3", "del4", 
   "teacher_student_relations", "del5", "teacher_satisfaction", "del6", "del7",
@@ -135,7 +136,7 @@ municipal_edu_image <- read_excel(file_list[4])
 
   # TODO: change to muni
 names(municipal_edu_image) <- c(
-  "hebrew_year", "city", "cid", "socio_economic_status", "district", "del1", 
+  "hebrew_year", "muni_name", "mid", "socio_economic_status", "district", "del1", 
   "del2", "del3", "del4", "del5", "del6", "high_schools_students", "del7",
   "del8", "del9", "del10", "masters_or_higher_in_high_school", "hatamot_ivchun",
   "hatamot_no_ivchun", "olim", "spcecial_ed_in_reg", "del11", "del12",
@@ -172,7 +173,7 @@ municipal_edu_image <- municipal_edu_image %>%
 schools_aklim <- read_excel(file_list[5])
 
 names(schools_aklim) <- c(
-  "questionaire_year", "district", "school_id", "school_name", "del1",
+  "questionaire_year", "district", "sid", "school_name", "del1",
   "del_edu_level", "muni_name", "sector", "type", "respondents_teacher",
   "respondents_students", "respondents_teacher_percentage", 
   "respondents_students_percentage", "del2", "del3", "del4", "del5",
@@ -193,11 +194,11 @@ schools_aklim <- schools_aklim %>%
 ```{r make_schools_edu_image, warning=FALSE}
 schools_edu_image <- read_excel(file_list[7])
 names(schools_edu_image) <- c(
-  "hebrew_year", "educational_district", "sid", "cid", "muni_name", 
+  "hebrew_year", "educational_district", "sid", "mid", "muni_name", 
   "school_name", "exam_putiry", "del1", "del2", "pentile_middle",
   "pentile_high", "del3", "decile_middle", "decile_high", "sector", "type",
   "from_grade", "to_grade", "school_plan", "tech", "del4", "olim",
-  "is_special_ed", "schooly_type", "number_of_classes",
+  "is_special_ed", "school_type", "number_of_classes",
   "number_of_classes_yod_yodbet", "del5", "del6", "del7", "number_of_students",
   "number_of_students_yod_yodbet", "number_of_students_yodbet",
   "median_seniority", "total_teachers", "masters_or_higher_in_high_school",
@@ -260,7 +261,10 @@ schools_bagrut <- schools_bagrut %>%
   ) %>%
   left_join(schools_edu_image[, c("year", "sid", "pentile_high")], by = c("year", "sid")) %>%
   mutate(pentile = pentile_high) %>%
-  select(-pentile_youth, -pentile_high)
+  select(-pentile_youth, -pentile_high) %>%
+  mutate_all(~ ifelse(. == "לא רלוונטי", NA, .)) %>%
+  mutate_all(~ ifelse(. == "לא מחושב", NA, .)) %>%
+  mutate(across(number_of_students_yodbet:math_5_reg_ed, ~ as.numeric(.x)))
 
 ```
 
@@ -372,7 +376,7 @@ print(regression_model$coefficients[-1])
 ```
 
 ```{r}
-# Load the required packages
+# Load the required package
 library(readxl)
 library(dplyr)
 library(stats)
@@ -390,18 +394,9 @@ print(merged_data)
 
 ```{r}
 # NEVO NEVO NEVO NEVO
-# Load the required packages
-library(readxl)
-library(dplyr)
-library(stats)
-
-# Read the Excel files
-dataset1 <- read_excel
-dataset1 <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-bagrut.xlsx")
-dataset2 <- read_excel("C:/University/Sem 2 Year 2/Tichnut mitkadem/project/data/schools-edu-image.xlsx")
 
 # Perform the join operation
-merged_data <- inner_join(dataset1, dataset2, by = c("school_id" = "sid", "year"))
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
 
 # Remove duplicate columns and keep only one column with the original name
 merged_data <- merged_data %>%
@@ -414,10 +409,10 @@ merged_data$class_size <- merged_data$number_of_students_yod_yodbet / merged_dat
 # Print the merged dataset with cleaned column names
 print(merged_data)
 # Print the merged data, ordered by "pentile" column in ascending order
-print(merged_data %>% arrange(pentile))
-
-glimpse(merged_data)
-
+# print(merged_data %>% arrange(pentile))
+# 
+# glimpse(merged_data)
+print(schools_bagrut)
 ```
 
 
@@ -428,16 +423,14 @@ glimpse(merged_data)
 ```{r}
 #NEVO NEVO NEVO NEVO
 
-# Load the required packages
-library(readxl)
-library(dplyr)
-library(stats)
-
 # Read the Excel file
-data <- merged_data
+data <- merged_data #%>%
+  # mutate(
+  #   math_5_reg_ed = as.numeric(math_5_reg_ed)
+  # )
 
 # Select the relevant features and target
-features <- features <- c('district', 'pentile', 'sector', 'type', 'school_type', 'tech', 
+features <- c('district', 'pentile', 'sector', 'type', 'school_type', 'tech', 
               'class_size', 'bagrut', 'masters_or_higher_in_high_school', 'median_seniority', 'bagrut_reg_ed', 'hatamot_ivchun', 'bagrut_excell', 
               'bagrut_reg_ed_excell')
 target <- 'math_5_reg_ed'
