@@ -98,7 +98,6 @@ lamas_budget <- lamas_budget %>%
 ```{r make_municipal_aklim, warning=FALSE}
 municipal_aklim <- read_excel(file_list[3])
 
-  # TODO: change to muni
 names(municipal_aklim) <- c(
   "mid", "muni_name", "del_edu_level", "hebrew_year", "respondents_teacher",
   "respondents_students", "respondents_teacher_percentage",
@@ -131,8 +130,45 @@ municipal_aklim <- municipal_aklim %>%
   mutate_all(~ ifelse(. == "-", NA, .))
 ```
 
+```{r make_municipal_budget, warning=FALSE}
+municipal_budget <- read_excel(file_list[4])
+
+names(municipal_budget) <- c(
+  "hebrew_year", "mid", "district", "muni_name", "socio_economic_status",
+  "del1", "del2", "del3", "teaching_hours", "teching_hours_cost", "tutor_hours",
+  "staying_hours", "guidance_hours", "guidance_hours_cost", "del4", "del5",
+  "del6", "del7", "tuition", "del8", "perimeter_services_cost",
+  "transportation_cost", "projects_cost", "purchases_cost", "del9", 
+  "maayan_hinuh_cost", "del10", "ptor_cost", "extras_ptor_cost", 
+  "number_of_students", "del11", "number_of_classes", "del12","del13", "del13", 
+  "del15", "total_budget"
+)
+
+municipal_budget <- municipal_budget[, -grep("^del[0-9]+$", names(municipal_budget))]
+
+municipal_budget <- municipal_budget %>%
+  mutate(
+    year = case_when(
+      hebrew_year == "תשפא" ~ 2021,
+      hebrew_year == "תשף" ~ 2020,
+      hebrew_year == "תשעט" ~ 2019,
+      hebrew_year == "תשעח" ~ 2018,
+      hebrew_year == "תשעז" ~ 2017,
+      hebrew_year == "תשעו" ~ 2016,
+      hebrew_year == "תשעה" ~ 2015,
+      hebrew_year == "תשעד" ~ 2014,
+      TRUE ~ NA_integer_
+      )
+  ) %>%
+  mutate_all(~ ifelse(. == "-", NA, .)) %>%
+  mutate(
+    across(teaching_hours:total_budget, ~ as.numeric(.x))
+  )
+
+```
+
 ```{r make_municipal_edu_image, warning=FALSE}
-municipal_edu_image <- read_excel(file_list[4])
+municipal_edu_image <- read_excel(file_list[5])
 
   # TODO: change to muni
 names(municipal_edu_image) <- c(
@@ -170,7 +206,7 @@ municipal_edu_image <- municipal_edu_image %>%
 ```
 
 ```{r make_schools_aklim, warning=FALSE}
-schools_aklim <- read_excel(file_list[5])
+schools_aklim <- read_excel(file_list[6])
 
 names(schools_aklim) <- c(
   "questionaire_year", "district", "sid", "school_name", "del1",
@@ -192,10 +228,10 @@ schools_aklim <- schools_aklim %>%
 ```
 
 ```{r make_schools_edu_image, warning=FALSE}
-schools_edu_image <- read_excel(file_list[7])
+schools_edu_image <- read_excel(file_list[8])
 names(schools_edu_image) <- c(
   "hebrew_year", "educational_district", "sid", "mid", "muni_name", 
-  "school_name", "exam_putiry", "del1", "del2", "pentile_middle",
+  "school_name", "exam_purity", "del1", "del2", "pentile_middle",
   "pentile_high", "del3", "decile_middle", "decile_high", "sector", "type",
   "from_grade", "to_grade", "school_plan", "tech", "del4", "olim",
   "is_special_ed", "school_type", "number_of_classes",
@@ -233,11 +269,11 @@ schools_edu_image <- schools_edu_image %>%
 
 ```{r make_schools_bagrut, warning=FALSE}
 #add is youthat risk
-schools_bagrut <- read_excel(file_list[6])
+schools_bagrut <- read_excel(file_list[7])
 
 names(schools_bagrut) <- c(
   "hebrew_year", "district", "muni_id", "muni_name", "sid", "school_name",
-  "exam_putiry", "pentile_youth", "sector", "type", "del1", "del2", "del3", "del4",
+  "exam_purity", "pentile_youth", "sector", "type", "del1", "del2", "del3", "del4",
   "number_of_students_yodbet", "bagrut", "del5", "bagrut_reg_ed", "del6",
   "bagrut_excell", "del7", "bagrut_reg_ed_excell", "del8", "english_4", "del9",
   "english_4_reg_ed", "del10", "english_5", "del11", "english_5_reg_ed",
@@ -336,6 +372,7 @@ X <- filtered_data[, setdiff(features, target)]
 # Split the dataset into features and target variables
 y <- filtered_data[[target]]
 ```
+
 ```{r}
 # Split the data into training and test sets
 set.seed(368)  # For reproducibility
@@ -409,10 +446,104 @@ abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 # Fabian
 ```{r}
+# Perform the join operation
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
+  inner_join(high_schools_budget, by = c("sid", "year")) %>%
+  select(-ends_with(".y")) %>%
+  select(-c("hebrew_year", "muni_name", "school_name", "sector")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x")) %>%
+  mutate(
+    class_size = number_of_students_yod_yodbet / number_of_classes_yod_yodbet,
+    budget_per_student = total_budget / (students_regular + students_special)
+  ) %>%
+  inner_join(municipal_budget, by = c("mid", "year"))
 
-```
+# Print the merged dataset with cleaned column names
+print(merged_data)
 
-```{r}
+data <- merged_data
+
+# Select the relevant features and target
+features <- c(
+  'district.x',
+  'pentile',
+  'sector',
+  'type',
+  'school_type',
+  'tech',
+  'class_size',
+  'bagrut',
+  'masters_or_higher_in_high_school',
+  'median_seniority',
+  'bagrut_reg_ed',
+  'hatamot_ivchun',
+  'special_ed',
+  'bagrut_excell',
+  'bagrut_reg_ed_excell',
+  'budget_per_student',
+  'teaching_hours.y'
+  )
+
+target <- 'math_5_reg_ed'
+
+# Filter the data and handle missing values if needed
+filtered_data <- na.omit(data[, c(features, target)])
+
+# Prepare the feature matrix
+X <- filtered_data[, setdiff(features, target)]
+
+# Split the dataset into features and target variables
+y <- filtered_data[[target]]
+
+# Split the data into training and test sets
+set.seed(368)  # For reproducibility
+train_indices <- sample(nrow(X), 0.8 * nrow(X))  # 80% for training
+train_X <- X[train_indices, ]
+train_y <- y[train_indices]
+test_X <- X[-train_indices, ]
+test_y <- y[-train_indices]
+
+# Fit the linear regression model on the training data
+regression_model <- lm(train_y ~ ., data = train_X)
+
+# Print the coefficients (weights) and intercept
+print("Intercept:")
+print(regression_model$coefficients[1])
+print("Coefficients:")
+print(regression_model$coefficients[-1])
+
+# Predict on the test set
+predictions <- predict(regression_model, newdata = test_X)
+
+# Calculate the adjusted R-squared
+n <- length(test_y)
+p <- length(regression_model$coefficients) - 1
+adj_r_squared <- 1 - ((1 - summary(regression_model)$r.squared) * (n - 1) / (n - p - 1))
+print("Adjusted R-squared:")
+print(adj_r_squared)
+
+# Calculate the mean squared error (MSE)
+mse <- mean((predictions - test_y)^2)
+print("Mean Squared Error (MSE):")
+print(mse)
+
+# Calculate the root mean squared error (RMSE)
+rmse <- sqrt(mse)
+print("Root Mean Squared Error (RMSE):")
+print(rmse)
+
+# Diagnostic tests
+# 1. Residuals vs. Fitted Values Plot
+plot(regression_model$fitted.values, regression_model$residuals, xlab = "Fitted Values", ylab = "Residuals", main = "Residuals vs. Fitted Values Plot")
+
+# 2. Normal Q-Q Plot of Residuals
+{qqnorm(regression_model$residuals, main = "Normal Q-Q Plot of Residuals")
+qqline(regression_model$residuals)}
+
+# 3. Scale-Location Plot
+sqrt_abs_residuals <- sqrt(abs(regression_model$residuals))
+{plot(regression_model$fitted.values, sqrt_abs_residuals, xlab = "Fitted Values", ylab = "Square Root of Absolute Residuals", main = "Scale-Location Plot")
+abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 ```
 
