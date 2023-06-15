@@ -238,7 +238,7 @@ names(schools_edu_image) <- c(
   "number_of_classes_yod_yodbet", "del5", "del6", "del7", "number_of_students",
   "number_of_students_yod_yodbet", "number_of_students_yodbet",
   "median_seniority", "total_teachers", "masters_or_higher_in_high_school",
-  "hatamot_no_ivhun", "del8", "hatamot_ivchun", "del9", "special_ed", "del10",
+  "hatamot_no_ivchun", "del8", "hatamot_ivchun", "del9", "special_ed", "del10",
   "del11", "dropouts", "del12", "del13", "del14", "dropouts_high_school",
   "youth_at_risk", "bagrut_school", "del15", "hila_students"
   )
@@ -554,77 +554,110 @@ abline(h = mean(sqrt_abs_residuals), col = "red")}
 ```{r}
 glimpse(merged_data)
 ```
+
 ```{r}
-# Merge the datasets based on school_id and year
-merged_data <- merge(high_schools_budget, schools_bagrut, by = c("school_id" = "sid", "year"))
+# Filter municipalities with over 1500 high_schools_students in 2014
+filtered_mid <- municipal_edu_image %>%
+  filter(year == 2014, high_schools_students >= 4500) %>%
+  distinct(mid)
 
-# Convert the bagrut_reg_ed and total_budget columns to numeric
-merged_data$bagrut_reg_ed <- as.numeric(merged_data$bagrut_reg_ed)
-merged_data$total_budget <- as.numeric(merged_data$total_budget)
+# Filter municipal_edu_image dataset based on filtered_mid
+filtered_data <- municipal_edu_image %>%
+  filter(mid %in% filtered_mid$mid)
 
-# Calculate the budget per student
-merged_data$budget_per_student <- merged_data$total_budget / (merged_data$students_regular + merged_data$students_special)
+# Convert "class_size" and "math_5_reg_ed" columns to numeric
+filtered_data$class_size <- as.numeric(filtered_data$class_size)
+filtered_data$math_5_reg_ed <- as.numeric(filtered_data$math_5_reg_ed)
 
-# Remove duplicate columns and keep only one column with the original name
-merged_data <- merged_data %>%
-  select(-ends_with(".y")) %>%
-  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
+# Plot the class_size for each muni_name
+ggplot(filtered_data, aes(x = year, y = class_size, color = muni_name, group = muni_name)) +
+  geom_line(size = 1) +
+  labs(x = "Year", y = "Class Size", color = "Municipality") +
+  theme_minimal() +
+  theme(legend.position = "right") +
+  scale_y_continuous(limits = c(23, 30), breaks = seq(23, 30, by = 2))
 
-# Create a new dataframe with the average budget_per_student per pentile, year, and district
-budget_per_student_data <- filtered_data %>%
-  group_by(year, pentile, district) %>%
-  summarize(avg_budget_per_student = mean(budget_per_student))
+# Plot the math_5_reg_ed for each muni_name
+ggplot(filtered_data, aes(x = year, y = math_5_reg_ed, color = muni_name, group = muni_name)) +
+  geom_line(size = 1) +
+  labs(x = "Year", y = "Math 5 Reg Ed", color = "Municipality") +
+  theme_minimal() +
+  theme(legend.position = "right")
 
-# Plot the average budget_per_student per pentile by year with facet_wrap by district
-ggplot(budget_per_student_data, aes(x = year, y = avg_budget_per_student, color = as.factor(pentile))) +
-  geom_line() +
-  labs(x = "Year", y = "Average Budget per Student", title = "Average Budget per Student per Pentile by Year") +
-  scale_color_discrete(name = "Pentile") +
-  facet_wrap(~ district, nrow = 2)
+# Filter municipalities with over 1500 high_schools_students in 2014
+filtered_mid <- municipal_edu_image %>%
+  filter(year == 2014, high_schools_students >= 4500) %>%
+  distinct(mid)
 
-# Convert math_5_reg_ed column to numeric
-merged_data$math_5_reg_ed <- as.numeric(merged_data$math_5_reg_ed)
+# Filter municipal_edu_image dataset based on filtered_mid
+filtered_data <- municipal_edu_image %>%
+  filter(mid %in% filtered_mid$mid)
 
-# Filter data for years 2017 and onwards
-filtered_data <- merged_data %>%
-  filter(year >= 2017)
+# Convert "masters_or_higher_in_higher_school" column to numeric
+filtered_data$masters_or_higher_in_high_school <- as.numeric(filtered_data$masters_or_higher_in_high_school)
 
-# Create a new dataframe with the average math_5_reg_ed per pentile, year, and district
-math_5_reg_ed_data <- filtered_data %>%
-  group_by(year, pentile, district) %>%
-  summarize(avg_math_5_reg_ed = mean(math_5_reg_ed))
+# Plot the math_5_reg_ed for each muni_name
+ggplot(filtered_data, aes(x = year, y = masters_or_higher_in_high_school, color = muni_name, group = muni_name)) +
+  geom_line(size = 1) +
+  labs(x = "Year", y = "Masters Or Higher In High School", color = "Municipality") +
+  theme_minimal() +
+  theme(legend.position = "right")
+  scale_y_continuous(limits = c(0, 100), breaks = seq(20, 90, by = 10))
+  
+  # Filter municipalities with over 1500 high_schools_students in 2014
+filtered_mid <- municipal_edu_image %>%
+  filter(year == 2014, high_schools_students >= 4500) %>%
+  distinct(mid)
 
-# Plot the average math_5_reg_ed per pentile by year with facet_wrap by district
-ggplot(math_5_reg_ed_data, aes(x = year, y = avg_math_5_reg_ed, color = as.factor(pentile))) +
-  geom_line() +
-  labs(x = "Year", y = "Average math_5_reg_ed", title = "Average math_5_reg_ed per Pentile by Year") +
-  scale_color_discrete(name = "Pentile") +
-  facet_wrap(~ district, nrow = 2)
+# Filter municipal_edu_image dataset based on filtered_mid
+filtered_data <- municipal_edu_image %>%
+  filter(mid %in% filtered_mid$mid)
 
-# Convert bagrut_reg_ed column to numeric
-merged_data$bagrut_reg_ed <- as.numeric(merged_data$bagrut_reg_ed)
+# Convert "hatamot_ivchun" and "hatamot_no_ivchun" columns to numeric
+filtered_data$hatamot_ivchun <- as.numeric(filtered_data$hatamot_ivchun)
+filtered_data$hatamot_no_ivchun <- as.numeric(filtered_data$hatamot_no_ivchun)
 
-# Filter data for years 2017 and onwards
-filtered_data <- merged_data %>%
-  filter(year >= 2017)
+# Calculate the sum of hatamot_ivchun and hatamot_no_ivchun
+filtered_data$sum_hatamot <- filtered_data$hatamot_ivchun + filtered_data$hatamot_no_ivchun
 
-# Create a new dataframe with the average bagrut_reg_ed per pentile, year, and district
-bagrut_reg_ed_data <- filtered_data %>%
-  group_by(year, pentile, district) %>%
-  summarize(avg_bagrut_reg_ed = mean(bagrut_reg_ed))
-
-# Plot the average bagrut_reg_ed per pentile by year with facet_wrap by district
-ggplot(bagrut_reg_ed_data, aes(x = year, y = avg_bagrut_reg_ed, color = as.factor(pentile))) +
-  geom_line() +
-  labs(x = "Year", y = "Average bagrut_reg_ed", title = "Average bagrut_reg_ed per Pentile by Year") +
-  scale_color_discrete(name = "Pentile") +
-  facet_wrap(~ district, nrow = 2)
+# Plot the sum of hatamot_ivchun and hatamot_no_ivchun for each muni_name
+ggplot(filtered_data, aes(x = year, y = sum_hatamot, color = muni_name, group = muni_name)) +
+  geom_line(size = 1) +
+  labs(x = "Year", y = "Sum of Hatamot", color = "Municipality") +
+  theme_minimal() +
+  theme(legend.position = "right")
 
 ```
 
 
 ```{r}
+# Perform the join operation
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
+  inner_join(high_schools_budget, by = c("sid", "year")) %>%
+  select(-ends_with(".y")) %>%
+  select(-c("hebrew_year", "muni_name", "school_name", "sector")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x")) %>%
 
+view(merged_data)
+
+# Perform the join operation
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
+
+# Filter the joined dataset based on the given criteria
+filtered_high_schools <- merged_data %>%
+  filter(pentile_high == "3", sector == "יהודי", type != "חרדי", year == 2020)
+
+# Convert "hatamot_no_ivhun" and "hatamot_ivchun" columns to numeric
+filtered_high_schools$hatamot_no_ivchun <- as.numeric(filtered_high_schools$hatamot_no_ivchun)
+filtered_high_schools$hatamot_ivchun <- as.numeric(filtered_high_schools$hatamot_ivchun)
+
+# Create a scatter plot
+ggplot(filtered_high_schools, aes(x = hatamot_no_ivchun + hatamot_ivchun, y = math_5_reg_ed)) +
+  geom_point() +
+  labs(x = "Sum of Hatamot", y = "Math 5 Reg Ed") +
+  theme_minimal()
 ```
 
 ```{r}
