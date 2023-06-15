@@ -552,7 +552,122 @@ abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 ```
 ```{r}
-glimpse(merged_data)
+#NEVO NEVO NEVO NEVO
+
+## Relationship between pentile, class size and 5 points math bagrut
+library(ggplot2)
+
+# Create a scatter plot
+ggplot(data, aes(x = class_size, y = math_5_reg_ed, color = pentile)) +
+  geom_point() +
+  labs(x = "Class Size", y = "Math 5 points Bagrut Entitlement", color = "Pentile")
+
+
+```
+```{r}
+#NEVO NEVO NEVO NEVO
+
+## Relationship between pentile, class size, district, and 5 points math bagrut
+library(ggplot2)
+library(dplyr)
+
+# Create the class size bins
+filtered_data$class_size_bin <- cut(filtered_data$class_size, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, Inf), 
+                                   labels = c("0-5", "6-10", "11-15", "16-20", "21-25", "26-30", "31-35", "36+"))
+
+# Calculate the average math_5_reg_ed score for each pentile, class size bin, and district
+average_scores <- filtered_data %>%
+  filter(tech <= 50) %>%
+  group_by(pentile, class_size_bin, district) %>%
+  summarize(average_score = mean(math_5_reg_ed))
+
+# Plot the average math_5_reg_ed scores
+ggplot(average_scores, aes(x = pentile, y = average_score, fill = class_size_bin)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
+  geom_vline(aes(xintercept = as.numeric(pentile) + 0.5), color = "black", linetype = "dashed", size = 0.5) +
+  labs(x = "Pentile", y = "Average math_5_reg_ed Score", fill = "Class Size") +
+  ggtitle("Average math_5_reg_ed Score by Pentile and Class Size") +
+  theme_bw() +
+  facet_wrap(~ district, ncol = 2)
+```
+
+```{r}
+# Calculate the average class size by sector
+average_class_size <- filtered_data %>%
+  group_by(sector) %>%
+  summarize(average_size = mean(class_size))
+
+# Plot the average class size by sector
+ggplot(average_class_size, aes(x = sector, y = average_size)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(x = "Sector", y = "Average Class Size", title = "Average Class Size by Sector") +
+  theme_bw()
+```
+
+```{r}
+
+# Group the data by pentile and calculate the mean of hatamot_ivchun
+hatamot_ivchun_by_pentile <- merged_data %>%
+  group_by(pentile) %>%
+  summarize(mean_hatamot_ivchun = mean(hatamot_ivchun, na.rm = TRUE))
+
+# Print the result
+print(hatamot_ivchun_by_pentile)
+```
+
+```{r}
+# Calculate the sum of hatamot_ivchun and hatamot_no_ivchun
+merged_data$hatamot_sum <- merged_data$hatamot_ivchun + merged_data$hatamot_no_ivhun
+
+# Divide hatamot_sum into 5 bins
+merged_data$ivchun_bins <- cut(merged_data$hatamot_sum, breaks = 10)
+
+# Calculate the average math score for each bin
+average_math_score <- merged_data %>%
+  group_by(ivchun_bins) %>%
+  summarize(average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
+
+# Create the bar plot
+ggplot(average_math_score, aes(x = ivchun_bins, y = average_math_score)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(x = "Hatamot Total", y = "Average Math Score") +
+  theme_minimal()
+```
+```{r}
+## Relationship between math_5 and Pentiles with percentages of Hatamot Ivchun
+
+# Filter the data for the year 2021
+filtered_data <- merged_data %>%
+  filter(year >= 2020)
+
+# Create a new dataframe with the average hatamot_ivchun rate and math score by pentile
+average_data <- filtered_data %>%
+  group_by(pentile) %>%
+  summarize(average_hatamot_ivchun = mean(hatamot_ivchun, na.rm = TRUE),
+            average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
+
+# Create the bar plot
+ggplot(average_data, aes(x = pentile, y = average_math_score, fill = average_hatamot_ivchun)) +
+  geom_col() +
+  labs(x = "Pentile", y = "Average Math Score", fill = "Average Hatamot Ivchun") +
+  scale_fill_gradient(low = "light green", high = "dark green") +
+  theme_minimal()
+```
+
+```{r}
+# Divide hatamot_ivchun into 5 bins
+merged_data$ivchun_bins <- cut(merged_data$hatamot_ivchun, breaks = 10)
+
+# Calculate the average math score for each bin
+average_math_score <- merged_data %>%
+  group_by(ivchun_bins) %>%
+  summarize(average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
+
+# Create the bar plot
+ggplot(average_math_score, aes(x = ivchun_bins, y = average_math_score)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(x = "Hatamot Ivchun Bins", y = "Average Math Score") +
+  theme_minimal()
 ```
 
 ```{r}
