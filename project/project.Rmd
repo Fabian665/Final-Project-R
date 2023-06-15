@@ -181,7 +181,7 @@ names(municipal_edu_image) <- c(
   "bagrut_reg_ed", "bagrut_excel", "bagrut_reg_ed_excel", "english_4", 
   "english_4_reg_ed", "english_5", "english_5_reg_ed", "math_4", 
   "math_4_reg_ed", "math_5", "math_5_reg_ed", "del21", "del22", "del23",
-  "del24", "del25", "del26", "del27", "class_size"
+  "del24", "del25", "del26", "class_size"
   )
 
 municipal_edu_image <- municipal_edu_image[, -grep("^del[0-9]+$", names(municipal_edu_image))]
