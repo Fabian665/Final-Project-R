@@ -419,6 +419,7 @@ print(rmse)
 # 1. Residuals vs. Fitted Values Plot
 plot(regression_model$fitted.values, regression_model$residuals, xlab = "Fitted Values", ylab = "Residuals", main = "Residuals vs. Fitted Values Plot")
 
+<<<<<<< Updated upstream
 # 2. Normal Q-Q Plot of Residuals
 {qqnorm(regression_model$residuals, main = "Normal Q-Q Plot of Residuals")
 qqline(regression_model$residuals)}
@@ -430,6 +431,11 @@ abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 ```
 
+=======
+## Relationship between pentile, class size, district, and 5 points math bagrut
+library(ggplot2)
+library(dplyr)
+>>>>>>> Stashed changes
 
 # Nevo
 
@@ -543,6 +549,76 @@ qqline(regression_model$residuals)}
 sqrt_abs_residuals <- sqrt(abs(regression_model$residuals))
 {plot(regression_model$fitted.values, sqrt_abs_residuals, xlab = "Fitted Values", ylab = "Square Root of Absolute Residuals", main = "Scale-Location Plot")
 abline(h = mean(sqrt_abs_residuals), col = "red")}
+
+```
+```{r}
+glimpse(merged_data)
+```
+```{r}
+# Merge the datasets based on school_id and year
+merged_data <- merge(high_schools_budget, schools_bagrut, by = c("school_id" = "sid", "year"))
+
+# Convert the bagrut_reg_ed and total_budget columns to numeric
+merged_data$bagrut_reg_ed <- as.numeric(merged_data$bagrut_reg_ed)
+merged_data$total_budget <- as.numeric(merged_data$total_budget)
+
+# Calculate the budget per student
+merged_data$budget_per_student <- merged_data$total_budget / (merged_data$students_regular + merged_data$students_special)
+
+# Remove duplicate columns and keep only one column with the original name
+merged_data <- merged_data %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
+
+# Create a new dataframe with the average budget_per_student per pentile, year, and district
+budget_per_student_data <- filtered_data %>%
+  group_by(year, pentile, district) %>%
+  summarize(avg_budget_per_student = mean(budget_per_student))
+
+# Plot the average budget_per_student per pentile by year with facet_wrap by district
+ggplot(budget_per_student_data, aes(x = year, y = avg_budget_per_student, color = as.factor(pentile))) +
+  geom_line() +
+  labs(x = "Year", y = "Average Budget per Student", title = "Average Budget per Student per Pentile by Year") +
+  scale_color_discrete(name = "Pentile") +
+  facet_wrap(~ district, nrow = 2)
+
+# Convert math_5_reg_ed column to numeric
+merged_data$math_5_reg_ed <- as.numeric(merged_data$math_5_reg_ed)
+
+# Filter data for years 2017 and onwards
+filtered_data <- merged_data %>%
+  filter(year >= 2017)
+
+# Create a new dataframe with the average math_5_reg_ed per pentile, year, and district
+math_5_reg_ed_data <- filtered_data %>%
+  group_by(year, pentile, district) %>%
+  summarize(avg_math_5_reg_ed = mean(math_5_reg_ed))
+
+# Plot the average math_5_reg_ed per pentile by year with facet_wrap by district
+ggplot(math_5_reg_ed_data, aes(x = year, y = avg_math_5_reg_ed, color = as.factor(pentile))) +
+  geom_line() +
+  labs(x = "Year", y = "Average math_5_reg_ed", title = "Average math_5_reg_ed per Pentile by Year") +
+  scale_color_discrete(name = "Pentile") +
+  facet_wrap(~ district, nrow = 2)
+
+# Convert bagrut_reg_ed column to numeric
+merged_data$bagrut_reg_ed <- as.numeric(merged_data$bagrut_reg_ed)
+
+# Filter data for years 2017 and onwards
+filtered_data <- merged_data %>%
+  filter(year >= 2017)
+
+# Create a new dataframe with the average bagrut_reg_ed per pentile, year, and district
+bagrut_reg_ed_data <- filtered_data %>%
+  group_by(year, pentile, district) %>%
+  summarize(avg_bagrut_reg_ed = mean(bagrut_reg_ed))
+
+# Plot the average bagrut_reg_ed per pentile by year with facet_wrap by district
+ggplot(bagrut_reg_ed_data, aes(x = year, y = avg_bagrut_reg_ed, color = as.factor(pentile))) +
+  geom_line() +
+  labs(x = "Year", y = "Average bagrut_reg_ed", title = "Average bagrut_reg_ed per Pentile by Year") +
+  scale_color_discrete(name = "Pentile") +
+  facet_wrap(~ district, nrow = 2)
 
 ```
 
