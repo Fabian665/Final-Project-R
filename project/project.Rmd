@@ -564,6 +564,8 @@ ggplot(data, aes(x = class_size, y = math_5_reg_ed, color = pentile)) +
 
 
 ```
+
+
 ```{r}
 #NEVO NEVO NEVO NEVO
 
@@ -571,13 +573,30 @@ ggplot(data, aes(x = class_size, y = math_5_reg_ed, color = pentile)) +
 library(ggplot2)
 library(dplyr)
 
+# Perform the join operation
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
+
+# Remove duplicate columns and keep only one column with the original name
+merged_data <- merged_data %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
+
+# Add a new column of class size
+merged_data$class_size <- merged_data$number_of_students_yod_yodbet / merged_data$number_of_classes_yod_yodbet
+
+# Drop rows with NA values in pentile column
+merged_data <- merged_data[complete.cases(merged_data$pentile), ]
+
+filtered_data <- merged_data
+
+filtered_data$class_size <- as.numeric(filtered_data$class_size)
+
 # Create the class size bins
-filtered_data$class_size_bin <- cut(filtered_data$class_size, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, Inf), 
-                                   labels = c("0-5", "6-10", "11-15", "16-20", "21-25", "26-30", "31-35", "36+"))
+filtered_data$class_size_bin <- cut(filtered_data$class_size, breaks = c(10, 15, 20, 25, 30, 35, Inf), 
+                                   labels = c("11-15", "16-20", "21-25", "26-30", "31-35", "36+"))
 
 # Calculate the average math_5_reg_ed score for each pentile, class size bin, and district
 average_scores <- filtered_data %>%
-  filter(tech <= 50) %>%
   group_by(pentile, class_size_bin, district) %>%
   summarize(average_score = mean(math_5_reg_ed))
 
@@ -585,90 +604,88 @@ average_scores <- filtered_data %>%
 ggplot(average_scores, aes(x = pentile, y = average_score, fill = class_size_bin)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
   geom_vline(aes(xintercept = as.numeric(pentile) + 0.5), color = "black", linetype = "dashed", size = 0.5) +
-  labs(x = "Pentile", y = "Average math_5_reg_ed Score", fill = "Class Size") +
-  ggtitle("Average math_5_reg_ed Score by Pentile and Class Size") +
+  labs(x = "Pentile (Nurturing Index)", y = "5 Points Math Entitlement (%)", fill = "Class Size") +
+  ggtitle("5 Points Math Entitlement by Pentile and Class Size") +
   theme_bw() +
   facet_wrap(~ district, ncol = 2)
 ```
 
-```{r}
-# Calculate the average class size by sector
-average_class_size <- filtered_data %>%
-  group_by(sector) %>%
-  summarize(average_size = mean(class_size))
 
-# Plot the average class size by sector
-ggplot(average_class_size, aes(x = sector, y = average_size)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  labs(x = "Sector", y = "Average Class Size", title = "Average Class Size by Sector") +
-  theme_bw()
+```{r}
+# Perform the join operation
+merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
+
+# Remove duplicate columns and keep only one column with the original name
+merged_data <- merged_data %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
+
+# Filter out rows where hatamot_sum is NA
+merged_data <- merged_data[!is.na(merged_data$hatamot_ivchun), ]
+merged_data <- merged_data[!is.na(merged_data$hatamot_no_ivchun), ]
+
+# Adjust the scales of hatamot_sum and math_5_red_ed to range from 0 to 100
+merged_data$hatamot_sum <- (merged_data$hatamot_ivchun + merged_data$hatamot_no_ivchun) * 100
+merged_data$math_5_reg_ed <- merged_data$math_5_reg_ed / 1000
+
+# Filter out rows where hatamot_sum is NA
+merged_data <- merged_data[!is.na(merged_data$hatamot_sum), ]
+
+view(merged_data)
+
+# Create the bar graph
+ggplot(merged_data, aes(x = cut(hatamot_sum, breaks = seq(0, 100, by = 10)), y = math_5_reg_ed)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Academic Leniencies (With and Without Assessment) (%)",
+       y = "5 Points In Math (%)") +
+  scale_x_discrete(labels = c("0-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
+library(cowplot)
+# Step 1: Perform an inner join
+joined_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
 
-# Group the data by pentile and calculate the mean of hatamot_ivchun
-hatamot_ivchun_by_pentile <- merged_data %>%
-  group_by(pentile) %>%
-  summarize(mean_hatamot_ivchun = mean(hatamot_ivchun, na.rm = TRUE))
+# Remove duplicate columns and keep only one column with the original name
+joined_data <- joined_data %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
 
-# Print the result
-print(hatamot_ivchun_by_pentile)
-```
+joined_data$hatamot_sum <- (joined_data$hatamot_ivchun + joined_data$hatamot_no_ivchun)
 
-```{r}
-# Calculate the sum of hatamot_ivchun and hatamot_no_ivchun
-merged_data$hatamot_sum <- merged_data$hatamot_ivchun + merged_data$hatamot_no_ivhun
+# Create subsets based on total hatamot threshold
+subset1 <- filter(joined_data, hatamot_sum >= 0.7)
+subset2 <- filter(joined_data, hatamot_sum < 0.7)
 
-# Divide hatamot_sum into 5 bins
-merged_data$ivchun_bins <- cut(merged_data$hatamot_sum, breaks = 10)
+# Calculate proportions for youth_at_risk and pentile within each subset
+prop_youth_at_risk_subset1 <- nrow(filter(subset1, youth_at_risk)) / nrow(subset1)
+prop_youth_at_risk_subset2 <- nrow(filter(subset2, youth_at_risk)) / nrow(subset2)
 
-# Calculate the average math score for each bin
-average_math_score <- merged_data %>%
-  group_by(ivchun_bins) %>%
-  summarize(average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
-
-# Create the bar plot
-ggplot(average_math_score, aes(x = ivchun_bins, y = average_math_score)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  labs(x = "Hatamot Total", y = "Average Math Score") +
+# Plot 1: Proportion of youth_at_risk = TRUE
+plot1 <- ggplot() +
+  geom_bar(data = data.frame(x = c("Leniencies >= 70%", "Leniencies < 70%"),
+                             prop = c(prop_youth_at_risk_subset1, prop_youth_at_risk_subset2)),
+           aes(x, prop * 100, fill = x), stat = "identity") +
+  scale_fill_manual(values = c("#F8766D", "#00BFC4"), guide = FALSE) +
+  labs(x = "", y = "Youth at Risk (%)", title = "Proportion of Youth at Risk") +
+  scale_y_continuous(limits = c(0, 30)) +
   theme_minimal()
-```
-```{r}
-## Relationship between math_5 and Pentiles with percentages of Hatamot Ivchun
 
-# Filter the data for the year 2021
-filtered_data <- merged_data %>%
-  filter(year >= 2020)
-
-# Create a new dataframe with the average hatamot_ivchun rate and math score by pentile
-average_data <- filtered_data %>%
-  group_by(pentile) %>%
-  summarize(average_hatamot_ivchun = mean(hatamot_ivchun, na.rm = TRUE),
-            average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
-
-# Create the bar plot
-ggplot(average_data, aes(x = pentile, y = average_math_score, fill = average_hatamot_ivchun)) +
-  geom_col() +
-  labs(x = "Pentile", y = "Average Math Score", fill = "Average Hatamot Ivchun") +
-  scale_fill_gradient(low = "light green", high = "dark green") +
+# Plot 2: Average special_ed
+plot2 <- ggplot() +
+  geom_bar(data = subset1, aes(x = "Leniencies >= 70%", y = special_ed), stat = "summary",fill = "#00BFC4") +
+  geom_bar(data = subset2, aes(x = "Leniencies < 70%", y = special_ed), stat = "summary", fill = "#F8766D") +
+  labs(x = "", y = "Special Education", title = "Average Special Education")
   theme_minimal()
+
+# Combine the plots into a single graph
+combined_plot <- cowplot::plot_grid(plot1, plot2, nrow = 1)
+
+# Display the combined graph
+print(combined_plot)
 ```
 
-```{r}
-# Divide hatamot_ivchun into 5 bins
-merged_data$ivchun_bins <- cut(merged_data$hatamot_ivchun, breaks = 10)
-
-# Calculate the average math score for each bin
-average_math_score <- merged_data %>%
-  group_by(ivchun_bins) %>%
-  summarize(average_math_score = mean(math_5_reg_ed, na.rm = TRUE))
-
-# Create the bar plot
-ggplot(average_math_score, aes(x = ivchun_bins, y = average_math_score)) +
-  geom_bar(stat = "identity", fill = "blue") +
-  labs(x = "Hatamot Ivchun Bins", y = "Average Math Score") +
-  theme_minimal()
-```
 
 ```{r}
 # Filter municipalities with over 1500 high_schools_students in 2014
@@ -744,6 +761,30 @@ ggplot(filtered_data, aes(x = year, y = sum_hatamot, color = muni_name, group = 
 
 ```
 
+```{r}
+## Relationship between pentile, class size, district, and 5 points math bagrut
+library(ggplot2)
+library(dplyr)
+
+# Create the class size bins
+filtered_data$class_size_bin <- cut(filtered_data$class_size, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, Inf), 
+                                   labels = c("0-5", "6-10", "11-15", "16-20", "21-25", "26-30", "31-35", "36+"))
+
+# Calculate the average math_5_reg_ed score for each pentile, class size bin, and district
+average_scores <- filtered_data %>%
+  group_by(pentile, class_size_bin, district) %>%
+  summarize(average_score = mean(math_5_reg_ed))
+
+# Plot the average math_5_reg_ed scores
+ggplot(average_scores, aes(x = pentile, y = average_score, fill = class_size_bin)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
+  geom_vline(aes(xintercept = as.numeric(pentile) + 0.5), color = "black", linetype = "dashed", size = 0.5) +
+  labs(x = "Pentile", y = "Average math_5_reg_ed Score", fill = "Class Size") +
+  ggtitle("Average math_5_reg_ed Score by Pentile and Class Size") +
+  theme_bw() +
+  facet_wrap(~ district, ncol = 2)
+```
+
 
 ```{r}
 # Perform the join operation
@@ -762,7 +803,7 @@ merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year
 
 # Filter the joined dataset based on the given criteria
 filtered_high_schools <- merged_data %>%
-  filter(pentile_high == "3", sector == "יהודי", type != "חרדי", year == 2020)
+  filter(pentile_high == "2", sector == "יהודי", year == 2021)
 
 # Convert "hatamot_no_ivhun" and "hatamot_ivchun" columns to numeric
 filtered_high_schools$hatamot_no_ivchun <- as.numeric(filtered_high_schools$hatamot_no_ivchun)
