@@ -27,7 +27,7 @@ library(cowplot)
 > You should than place all that data in the root directory of the project under a folder named data.
 
 ```{r get_file_names, include=FALSE}
-folder_path <- "../data"
+folder_path <- "data"
 
 # Get the list of files in the folder
 file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
@@ -401,31 +401,7 @@ test_y <- y[-train_indices]
 # Fit the linear regression model on the training data
 regression_model <- lm(train_y ~ ., data = train_X)
 
-# Print the coefficients (weights) and intercept
-print("Intercept:")
-print(regression_model$coefficients[1])
-print("Coefficients:")
-print(regression_model$coefficients[-1])
-
-# Predict on the test set
-predictions <- predict(regression_model, newdata = test_X)
-
-# Calculate the adjusted R-squared
-n <- length(test_y)
-p <- length(regression_model$coefficients) - 1
-adj_r_squared <- 1 - ((1 - summary(regression_model)$r.squared) * (n - 1) / (n - p - 1))
-print("Adjusted R-squared:")
-print(adj_r_squared)
-
-# Calculate the mean squared error (MSE)
-mse <- mean((predictions - test_y)^2)
-print("Mean Squared Error (MSE):")
-print(mse)
-
-# Calculate the root mean squared error (RMSE)
-rmse <- sqrt(mse)
-print("Root Mean Squared Error (RMSE):")
-print(rmse)
+summary(regression_model)
 
 # Diagnostic tests
 # 1. Residuals vs. Fitted Values Plot
