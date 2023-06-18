@@ -498,29 +498,23 @@ summary(regression_model)
     ## F-statistic: 296.6 on 35 and 3786 DF,  p-value: < 2.2e-16
 
 ``` r
-# Diagnostic tests
-# 1. Residuals vs. Fitted Values Plot
-plot(regression_model$fitted.values, regression_model$residuals, xlab = "Fitted Values", ylab = "Residuals", main = "Residuals vs. Fitted Values Plot")
+ggplot(regression_model, aes(x = .fitted, y = .resid)) + 
+  geom_point() +
+  labs(title='Residual vs. Fitted Values Plot', x='Fitted Values', y='Residuals') +
+  theme_minimal()
 ```
 
 ![](README_files/figure-gfm/regression_model-1.png)<!-- -->
 
 ``` r
-# 2. Normal Q-Q Plot of Residuals
-{qqnorm(regression_model$residuals, main = "Normal Q-Q Plot of Residuals")
-qqline(regression_model$residuals)}
+ggplot(regression_model, aes(sample = .resid)) +
+  stat_qq() + 
+  stat_qq_line(colour="red") +
+  labs(title = "Normal Q-Q Plot of Residuals") +
+  theme_minimal()
 ```
 
 ![](README_files/figure-gfm/regression_model-2.png)<!-- -->
-
-``` r
-# 3. Scale-Location Plot
-sqrt_abs_residuals <- sqrt(abs(regression_model$residuals))
-{plot(regression_model$fitted.values, sqrt_abs_residuals, xlab = "Fitted Values", ylab = "Square Root of Absolute Residuals", main = "Scale-Location Plot")
-abline(h = mean(sqrt_abs_residuals), col = "red")}
-```
-
-![](README_files/figure-gfm/regression_model-3.png)<!-- -->
 
 ## Plots
 
