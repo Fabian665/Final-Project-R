@@ -2,12 +2,12 @@
 title: "Project proposal"
 author: "Team number 5"
 mainfont: Roboto
-output:
-  pdf_document:
-    latex_engine: xelatex
+output: github_document
 fig_caption: true
 ---
+# Environment Setup
 
+## Load Libraries
 ```{r load-packages, message = FALSE}
 library(tidyverse)
 library(broom)
@@ -15,8 +15,10 @@ library(htmltools)
 library(readxl)
 library(skimr)
 library(stats)
+library(cowplot)
 ```
 
+## Read Tables
 ```{r get_file_names}
 folder_path <- "../data"
 
@@ -24,6 +26,7 @@ folder_path <- "../data"
 file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = TRUE)
 ```
 
+### Read High-School Budget Table
 ```{r make_high_schools_budget, warning=FALSE}
 high_schools_budget <- read_excel(file_list[1])
 
@@ -63,6 +66,7 @@ high_schools_budget <- high_schools_budget %>%
   )
 ```
 
+### Read Lamas Budget Table
 ```{r make_lamas_budget, warning=FALSE}
 lamas_budget <- read_excel(file_list[2])
 
@@ -95,6 +99,7 @@ lamas_budget <- lamas_budget %>%
     )
 ```
 
+### Read Municipal Table
 ```{r make_municipal_aklim, warning=FALSE}
 municipal_aklim <- read_excel(file_list[3])
 
@@ -130,6 +135,7 @@ municipal_aklim <- municipal_aklim %>%
   mutate_all(~ ifelse(. == "-", NA, .))
 ```
 
+### Read Municipal Budget Table
 ```{r make_municipal_budget, warning=FALSE}
 municipal_budget <- read_excel(file_list[4])
 
@@ -167,10 +173,10 @@ municipal_budget <- municipal_budget %>%
 
 ```
 
+### Read Municipal Education Image Table
 ```{r make_municipal_edu_image, warning=FALSE}
 municipal_edu_image <- read_excel(file_list[5])
 
-  # TODO: change to muni
 names(municipal_edu_image) <- c(
   "hebrew_year", "muni_name", "mid", "socio_economic_status", "district", "del1", 
   "del2", "del3", "del4", "del5", "del6", "high_schools_students", "del7",
@@ -205,6 +211,7 @@ municipal_edu_image <- municipal_edu_image %>%
   mutate_all(~ ifelse(. == "לא מחושב", NA, .))
 ```
 
+### Read School Aklim Table
 ```{r make_schools_aklim, warning=FALSE}
 schools_aklim <- read_excel(file_list[6])
 
@@ -227,6 +234,7 @@ schools_aklim <- schools_aklim %>%
   mutate_all(~ ifelse(. == "-", NA, .))
 ```
 
+### Read School Education Image Table
 ```{r make_schools_edu_image, warning=FALSE}
 schools_edu_image <- read_excel(file_list[8])
 names(schools_edu_image) <- c(
@@ -267,8 +275,8 @@ schools_edu_image <- schools_edu_image %>%
   )
 ```
 
+### Read School Bagrut Table
 ```{r make_schools_bagrut, warning=FALSE}
-#add is youthat risk
 schools_bagrut <- read_excel(file_list[7])
 
 names(schools_bagrut) <- c(
@@ -312,6 +320,8 @@ schools_bagrut <- schools_bagrut %>%
 
 ```
 
+# Data Analyzing
+## Linear Regression Model
 ```{r}
 # Convert "mid" column to character type in municipal_aklim
 municipal_aklim$mid <- as.character(municipal_aklim$mid)
@@ -424,28 +434,19 @@ sqrt_abs_residuals <- sqrt(abs(regression_model$residuals))
 abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 ```
-
-
+## Plots
+### 5 Points Math Entitlement by Pentile and District
 ```{r message=FALSE}
 # Perform the join operation
-merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
-
 # Remove duplicate columns and keep only one column with the original name
-merged_data <- merged_data %>%
+# Filter data for the years 2020-2021 Drop rows with NA values in pentile or math_5_reg_ed columns
+average_scores <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
   select(-ends_with(".y")) %>%
-  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
-
-# Filter data for the years 2020-2021
-filtered_data <- merged_data %>%
-  filter(year %in% c("2020", "2021"))
-
-# Drop rows with NA values in pentile or math_5_reg_ed columns
-filtered_data <- filtered_data[complete.cases(filtered_data$pentile, filtered_data$math_5_reg_ed), ]
-
-# Calculate the average math_5_reg_ed score for each pentile and district
-average_scores <- filtered_data %>%
-  group_by(pentile, district) %>%
-  summarize(average_score = mean(math_5_reg_ed))
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x")) %>%
+  filter(year %in% c("2020", "2021"), complete.cases(pentile, math_5_reg_ed)) %>% 
+  group_by(pentile, district) %>% # Calculate the average math_5_reg_ed score for each pentile and district
+  summarize(average_score = mean(math_5_reg_ed)) %>%
+  mutate(district = fct_relevel(district, "צפון", "חיפה", "ירושלים", "דרום", "מנח'י", "חינוך התישבותי", "מרכז", "תל אביב", "חרדי"))
 
 # Plot the average math_5_reg_ed scores
 ggplot(average_scores, aes(x = pentile, y = average_score, fill = district)) +
@@ -457,97 +458,41 @@ ggplot(average_scores, aes(x = pentile, y = average_score, fill = district)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-
-```{r}
-#NEVO NEVO NEVO NEVO
-
-## Relationship between pentile, class size and 5 points math bagrut
-library(ggplot2)
-
-# Create a scatter plot
-ggplot(data, aes(x = class_size, y = math_5_reg_ed, color = pentile)) +
-  geom_point() +
-  labs(x = "Class Size", y = "Math 5 points Bagrut Entitlement", color = "Pentile")
-
-
-```
-
-
-```{r}
-## Relationship between pentile, class size, district, and 5 points math bagrut
-library(ggplot2)
-library(dplyr)
-
-# Perform the join operation
-merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
-
-# Remove duplicate columns and keep only one column with the original name
-merged_data <- merged_data %>%
-  select(-ends_with(".y")) %>%
-  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
-
-# Add a new column of class size
-merged_data$class_size <- merged_data$number_of_students_yod_yodbet / merged_data$number_of_classes_yod_yodbet
-
-# Drop rows with NA values in pentile column
-merged_data <- merged_data[complete.cases(merged_data$pentile), ]
-
-filtered_data <- merged_data
-
-filtered_data$class_size <- as.numeric(filtered_data$class_size)
-
-# Create the class size bins
-filtered_data$class_size_bin <- cut(filtered_data$class_size, breaks = c(10, 15, 20, 25, 30, 35, Inf), 
-                                   labels = c("11-15", "16-20", "21-25", "26-30", "31-35", "36+"))
-
-# Calculate the average math_5_reg_ed score for each pentile, class size bin, and district
-average_scores <- filtered_data %>%
-  group_by(pentile, class_size_bin, district) %>%
-  summarize(average_score = mean(math_5_reg_ed))
-
-# Plot the average math_5_reg_ed scores
-ggplot(average_scores, aes(x = pentile, y = average_score, fill = class_size_bin)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8), color = "black") +
-  geom_vline(aes(xintercept = as.numeric(pentile) + 0.5), color = "black", linetype = "dashed", size = 0.5) +
-  labs(x = "Pentile (Nurturing Index)", y = "5 Points Math Entitlement (%)", fill = "Class Size") +
-  ggtitle("5 Points Math Entitlement by Pentile and Class Size") +
-  theme_bw() +
-  facet_wrap(~ district, ncol = 2)
-```
-
-
+### 5 Points In Math by Academic Leniencies
 ```{r}
 # Perform the join operation
-merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
-
 # Remove duplicate columns and keep only one column with the original name
-merged_data <- merged_data %>%
-  select(-ends_with(".y")) %>%
-  rename_with(~ gsub("\\.x$", "", .), ends_with(".x"))
-
 # Filter out rows where hatamot_sum is NA
-merged_data <- merged_data[!is.na(merged_data$hatamot_ivchun), ]
-merged_data <- merged_data[!is.na(merged_data$hatamot_no_ivchun), ]
-
 # Adjust the scales of hatamot_sum and math_5_red_ed to range from 0 to 100
-merged_data$hatamot_sum <- (merged_data$hatamot_ivchun + merged_data$hatamot_no_ivchun) * 100
-merged_data$math_5_reg_ed <- merged_data$math_5_reg_ed / 1000
-
-# Filter out rows where hatamot_sum is NA
-merged_data <- merged_data[!is.na(merged_data$hatamot_sum), ]
+hatamot <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ gsub("\\.x$", "", .), ends_with(".x")) %>%
+  drop_na(hatamot_ivchun, hatamot_no_ivchun) %>%
+  mutate(
+    hatamot_sum = round((hatamot_ivchun + hatamot_no_ivchun) * 100),
+    math_5_reg_ed = math_5_reg_ed / 1000
+    )
 
 # Create the bar graph
-ggplot(merged_data, aes(x = cut(hatamot_sum, breaks = seq(0, 100, by = 10)), y = math_5_reg_ed)) +
+ggplot(hatamot, aes(
+  x = cut(hatamot_sum,
+          breaks = seq(0, 100, by = 10),
+          include.lowest = TRUE,
+          labels = c("0-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100")
+          ),
+  y = math_5_reg_ed
+  )) +
   geom_bar(stat = "identity", fill = "#00BFC4") +
   labs(x = "Academic Leniencies (With and Without Assessment) (%)",
-       y = "5 Points In Math (%)", title = "5 Points In Math by Academic Leniencies") +
+       y = "5 Points In Math (%)",
+       title = "5 Points In Math by Academic Leniencies") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_discrete(labels = c("0-10", "10-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80-90", "90-100")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme_minimal()
 ```
 
-```{r}
-library(cowplot)
+### Leniencies
+```{r message=FALSE, warning=FALSE, results='hide'}
 # Step 1: Perform an inner join
 joined_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
 
@@ -574,7 +519,7 @@ plot1 <- ggplot() +
   scale_fill_manual(values = c("#F8766D", "#00BFC4"), guide = FALSE) +
   labs(x = "", y = "Youth at Risk (%)", title = "Proportion of Youth at Risk") +
   scale_y_continuous(limits = c(0, 30)) +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
   theme_minimal()
 
 # Plot 2: Average special_ed
@@ -582,15 +527,13 @@ plot2 <- ggplot() +
   geom_bar(data = subset1, aes(x = "Leniencies >= 70%", y = special_ed * 100), stat = "summary", fill = "#00BFC4") +
   geom_bar(data = subset2, aes(x = "Leniencies < 70%", y = special_ed * 100), stat = "summary", fill = "#F8766D") +
   labs(x = "", y = "Special Education (%)", title = "Average Special Education") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal()
 
-# Combine the plots into a single graph
-combined_plot <- cowplot::plot_grid(plot1, plot2, nrow = 1)
-
-# Display the combined graph
-print(combined_plot)
+cowplot::plot_grid(plot1, plot2, nrow = 1)
 ```
-```{r}
+### 5 Points In Math by Academic Leniencies (Among Jewish Education, 2nd Pentile)
+```{r message=FALSE, warning=FALSE}
 # Perform the join operation
 merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
   inner_join(high_schools_budget, by = c("sid", "year")) %>%
@@ -621,86 +564,12 @@ ggplot(filtered_high_schools, aes(x = (hatamot_no_ivchun + hatamot_ivchun)*100, 
   theme_minimal()
 ```
 
-```{r}
-# Filter municipalities with over 1500 high_schools_students in 2014
-filtered_mid <- municipal_edu_image %>%
-  filter(year == 2014, high_schools_students >= 4500) %>%
-  distinct(mid)
-
-# Filter municipal_edu_image dataset based on filtered_mid
-filtered_data <- municipal_edu_image %>%
-  filter(mid %in% filtered_mid$mid)
-
-# Convert "class_size" and "math_5_reg_ed" columns to numeric
-filtered_data$class_size <- as.numeric(filtered_data$class_size)
-filtered_data$math_5_reg_ed <- as.numeric(filtered_data$math_5_reg_ed)
-
-# Plot the class_size for each muni_name
-ggplot(filtered_data, aes(x = year, y = class_size, color = muni_name, group = muni_name)) +
-  geom_line(size = 1) +
-  labs(x = "Year", y = "Class Size", color = "Municipality") +
-  theme_minimal() +
-  theme(legend.position = "right") +
-  scale_y_continuous(limits = c(23, 30), breaks = seq(23, 30, by = 2))
-
-# Plot the math_5_reg_ed for each muni_name
-ggplot(filtered_data, aes(x = year, y = math_5_reg_ed, color = muni_name, group = muni_name)) +
-  geom_line(size = 1) +
-  labs(x = "Year", y = "5 Points Math Entitlement", color = "Municipality") +
-  theme_minimal() +
-  theme(legend.position = "right")
-
-# Filter municipalities with over 1500 high_schools_students in 2014
-filtered_mid <- municipal_edu_image %>%
-  filter(year == 2014, high_schools_students >= 4500) %>%
-  distinct(mid)
-
-# Filter municipal_edu_image dataset based on filtered_mid
-filtered_data <- municipal_edu_image %>%
-  filter(mid %in% filtered_mid$mid)
-
-# Convert "masters_or_higher_in_higher_school" column to numeric
-filtered_data$masters_or_higher_in_high_school <- as.numeric(filtered_data$masters_or_higher_in_high_school)
-
-# Plot the math_5_reg_ed for each muni_name
-ggplot(filtered_data, aes(x = year, y = masters_or_higher_in_high_school*100, color = muni_name, group = muni_name)) +
-  geom_line(size = 1) +
-  labs(x = "Year", y = "Masters Or Higher Teachers In High School (%)", title = "Masters Or Higher Teachers Over The Years, Largest Cities", color = "City") +
-  theme_minimal() +
-  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
-  
-  # Filter municipalities with over 1500 high_schools_students in 2014
-filtered_mid <- municipal_edu_image %>%
-  filter(year == 2014, high_schools_students >= 4500) %>%
-  distinct(mid)
-
-# Filter municipal_edu_image dataset based on filtered_mid
-filtered_data <- municipal_edu_image %>%
-  filter(mid %in% filtered_mid$mid)
-
-# Convert "hatamot_ivchun" and "hatamot_no_ivchun" columns to numeric
-filtered_data$hatamot_ivchun <- as.numeric(filtered_data$hatamot_ivchun)
-filtered_data$hatamot_no_ivchun <- as.numeric(filtered_data$hatamot_no_ivchun)
-
-# Calculate the sum of hatamot_ivchun and hatamot_no_ivchun
-filtered_data$sum_hatamot <- filtered_data$hatamot_ivchun + filtered_data$hatamot_no_ivchun
-
-# Plot the sum of hatamot_ivchun and hatamot_no_ivchun for each muni_name
-ggplot(filtered_data, aes(x = year, y = sum_hatamot, color = muni_name, group = muni_name)) +
-  geom_line(size = 1) +
-  labs(x = "Year", y = "Academic Leniencies", color = "Municipality") +
-  theme_minimal() +
-  theme(legend.position = "right")
-
-```
-
+### Distribution of Teachers with Master's Degree or Higher
 ```{r}
 # Filter data from schools_edu_image for years 2020-2021 and remove rows with missing values
-schools_filtered <- schools_edu_image %>%
-  filter(year >= 2018 & year <= 2021 & !is.na(pentile_high) & !is.na(masters_or_higher_in_high_school))
-
 # Calculate the average masters_or_higher_in_high_school by pentile_high from schools_filtered
-average_by_pentile <- schools_filtered %>%
+average_by_pentile <- schools_edu_image %>%
+  filter(year >= 2018 & year <= 2021 & !is.na(pentile_high) & !is.na(masters_or_higher_in_high_school)) %>%
   group_by(pentile_high) %>%
   summarise(average_masters = mean(as.numeric(masters_or_higher_in_high_school)))
 
@@ -713,14 +582,13 @@ plot1 <- ggplot(average_by_pentile, aes(pentile_high, average_masters)) +
   scale_y_continuous(labels = function(x) x * 100)
 
 # Filter data from municipal_edu_image for years 2020-2021 and remove rows with missing values
-municipal_filtered <- municipal_edu_image %>%
-  filter(year >= 2018 & year <= 2021 & !is.na(socio_economic_status) & !is.na(masters_or_higher_in_high_school))
-
-# Convert masters_or_higher_in_high_school to numeric
-municipal_filtered$masters_or_higher_in_high_school <- as.numeric(municipal_filtered$masters_or_higher_in_high_school)
-
-# Calculate the average masters_or_higher_in_high_school by socio_economic_status from municipal_filtered
-average_by_socio_economic <- municipal_filtered %>%
+# Calculate the average masters_or_higher_in_high_school by socio_economic_status
+average_by_socio_economic <- municipal_edu_image %>%
+  filter(year >= 2018 & year <= 2021 & !is.na(socio_economic_status) & !is.na(masters_or_higher_in_high_school)) %>%
+  mutate(
+    masters_or_higher_in_high_school = as.numeric(masters_or_higher_in_high_school),
+    socio_economic_status = factor(socio_economic_status, levels = c(9, 8, 7, 6, 5, 4, 3, 2, 1))
+    ) %>%
   group_by(socio_economic_status) %>%
   summarise(average_masters = mean(masters_or_higher_in_high_school, na.rm = TRUE))
 
@@ -729,7 +597,6 @@ plot2 <- ggplot(average_by_socio_economic, aes(socio_economic_status, average_ma
   geom_bar(stat = "identity", fill = "#F8766D") +
   labs(x = "Socioeconomic Status", y = "Masters or Higher (%)", title = "Average Masters or Higher by Socio-economic Status (2018-2021)") +
   theme_minimal() +
-  scale_x_continuous(breaks = seq(1, 10, by = 1)) +
   theme(plot.title = element_text(size = 8, hjust = 0.5)) +
   scale_y_continuous(labels = function(x) x * 100)
 
