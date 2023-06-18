@@ -21,6 +21,11 @@ library(cowplot)
 ```
 
 ## Read Tables
+
+> **Note**  
+> You can download all used data from: https://infocenter.education.gov.il/all/extensions/Shkifut_Reports/Shkifut_Reports.html.  
+> You should than place all that data in the root directory of the project under a folder named data.
+
 ```{r get_file_names, include=FALSE}
 folder_path <- "../data"
 
