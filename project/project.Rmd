@@ -2,7 +2,9 @@
 title: "Project proposal"
 author: "Team number 5"
 mainfont: Roboto
-output: github_document
+output:
+  github_document:
+    toc: true
 fig_caption: true
 ---
 # Environment Setup
