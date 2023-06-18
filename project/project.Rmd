@@ -10,7 +10,7 @@ fig_caption: true
 # Environment Setup
 
 ## Load Libraries
-```{r load-packages, message = FALSE}
+```{r load-packages, message=FALSE, include=FALSE}
 library(tidyverse)
 library(broom)
 library(htmltools)
@@ -21,7 +21,7 @@ library(cowplot)
 ```
 
 ## Read Tables
-```{r get_file_names}
+```{r get_file_names, include=FALSE}
 folder_path <- "../data"
 
 # Get the list of files in the folder
@@ -29,7 +29,7 @@ file_list <- list.files(path = folder_path, pattern = "\\.xlsx$", full.names = T
 ```
 
 ### Read High-School Budget Table
-```{r make_high_schools_budget, warning=FALSE}
+```{r make_high_schools_budget, warning=FALSE, cache=TRUE}
 high_schools_budget <- read_excel(file_list[1])
 
 names(high_schools_budget) <- c(
@@ -69,7 +69,7 @@ high_schools_budget <- high_schools_budget %>%
 ```
 
 ### Read Lamas Budget Table
-```{r make_lamas_budget, warning=FALSE}
+```{r make_lamas_budget, warning=FALSE, cache=TRUE}
 lamas_budget <- read_excel(file_list[2])
 
 names(lamas_budget) <- c(
@@ -102,7 +102,7 @@ lamas_budget <- lamas_budget %>%
 ```
 
 ### Read Municipal Table
-```{r make_municipal_aklim, warning=FALSE}
+```{r make_municipal_aklim, warning=FALSE, cache=TRUE}
 municipal_aklim <- read_excel(file_list[3])
 
 names(municipal_aklim) <- c(
@@ -138,7 +138,7 @@ municipal_aklim <- municipal_aklim %>%
 ```
 
 ### Read Municipal Budget Table
-```{r make_municipal_budget, warning=FALSE}
+```{r make_municipal_budget, warning=FALSE, cache=TRUE}
 municipal_budget <- read_excel(file_list[4])
 
 names(municipal_budget) <- c(
@@ -176,7 +176,7 @@ municipal_budget <- municipal_budget %>%
 ```
 
 ### Read Municipal Education Image Table
-```{r make_municipal_edu_image, warning=FALSE}
+```{r make_municipal_edu_image, warning=FALSE, cache=TRUE}
 municipal_edu_image <- read_excel(file_list[5])
 
 names(municipal_edu_image) <- c(
@@ -214,7 +214,7 @@ municipal_edu_image <- municipal_edu_image %>%
 ```
 
 ### Read School Aklim Table
-```{r make_schools_aklim, warning=FALSE}
+```{r make_schools_aklim, warning=FALSE, cache=TRUE}
 schools_aklim <- read_excel(file_list[6])
 
 names(schools_aklim) <- c(
@@ -237,7 +237,7 @@ schools_aklim <- schools_aklim %>%
 ```
 
 ### Read School Education Image Table
-```{r make_schools_edu_image, warning=FALSE}
+```{r make_schools_edu_image, warning=FALSE, cache=TRUE}
 schools_edu_image <- read_excel(file_list[8])
 names(schools_edu_image) <- c(
   "hebrew_year", "educational_district", "sid", "mid", "muni_name", 
@@ -278,7 +278,7 @@ schools_edu_image <- schools_edu_image %>%
 ```
 
 ### Read School Bagrut Table
-```{r make_schools_bagrut, warning=FALSE}
+```{r make_schools_bagrut, warning=FALSE, cache=TRUE}
 schools_bagrut <- read_excel(file_list[7])
 
 names(schools_bagrut) <- c(
@@ -324,7 +324,7 @@ schools_bagrut <- schools_bagrut %>%
 
 # Data Analyzing
 ## Linear Regression Model
-```{r}
+```{r regresseion_model_prep, cache=TRUE}
 # Convert "mid" column to character type in municipal_aklim
 municipal_aklim$mid <- as.character(municipal_aklim$mid)
 
@@ -352,7 +352,7 @@ print(merged_data)
 data <- merged_data
 ```
 
-```{r}
+```{r regression_model, cache=TRUE}
 # Select the relevant features and target
 features <- c(
   'district.x',
@@ -436,9 +436,10 @@ sqrt_abs_residuals <- sqrt(abs(regression_model$residuals))
 abline(h = mean(sqrt_abs_residuals), col = "red")}
 
 ```
+
 ## Plots
 ### 5 Points Math Entitlement by Pentile and District
-```{r message=FALSE}
+```{r five_points_by_pentile_district, message=FALSE, cache=TRUE}
 # Perform the join operation
 # Remove duplicate columns and keep only one column with the original name
 # Filter data for the years 2020-2021 Drop rows with NA values in pentile or math_5_reg_ed columns
@@ -461,7 +462,7 @@ ggplot(average_scores, aes(x = pentile, y = average_score, fill = district)) +
 ```
 
 ### 5 Points In Math by Academic Leniencies
-```{r}
+```{r leniencies_plot, cache=TRUE}
 # Perform the join operation
 # Remove duplicate columns and keep only one column with the original name
 # Filter out rows where hatamot_sum is NA
@@ -494,7 +495,7 @@ ggplot(hatamot, aes(
 ```
 
 ### Leniencies
-```{r message=FALSE, warning=FALSE, results='hide'}
+```{r leniencies_in_special_and_risk_plot, message=FALSE, warning=FALSE, results='hide', cache=TRUE}
 # Step 1: Perform an inner join
 joined_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year"))
 
@@ -534,8 +535,9 @@ plot2 <- ggplot() +
 
 cowplot::plot_grid(plot1, plot2, nrow = 1)
 ```
+
 ### 5 Points In Math by Academic Leniencies (Among Jewish Education, 2nd Pentile)
-```{r message=FALSE, warning=FALSE}
+```{r 5_points_jew_2nd_pentile, message=FALSE, warning=FALSE, cache=TRUE}
 # Perform the join operation
 merged_data <- inner_join(schools_bagrut, schools_edu_image, by = c("sid", "year")) %>%
   inner_join(high_schools_budget, by = c("sid", "year")) %>%
@@ -567,7 +569,7 @@ ggplot(filtered_high_schools, aes(x = (hatamot_no_ivchun + hatamot_ivchun)*100, 
 ```
 
 ### Distribution of Teachers with Master's Degree or Higher
-```{r}
+```{r masters_dist_plot, cache=TRUE}
 # Filter data from schools_edu_image for years 2020-2021 and remove rows with missing values
 # Calculate the average masters_or_higher_in_high_school by pentile_high from schools_filtered
 average_by_pentile <- schools_edu_image %>%
